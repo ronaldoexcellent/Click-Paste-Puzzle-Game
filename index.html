@@ -1,0 +1,463 @@
+<!-- Dr. Impulse's Web Game Rule -->
+<!-- Begin Game Style -->
+<style>
+    #Game[data-role='game'] {
+        background: grey;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        display: grid;
+        justify-content: center; 
+       /*  align-items: center; */
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        user-select: none;
+    }
+
+    [data-role='game']::-webkit-scrollbar {
+        display: block;
+        background: white;
+    }
+    [data-role='game']::-webkit-scrollbar-thumb {
+        background: rgb(177, 180, 0);
+    }
+</style>
+<!-- End Game Style -->
+
+<!-- Start Game Building -->
+<section::game id="Game" data-role="game" draggable="false" onContextMenu="return false">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Game Title -->
+    <title>Tiling Puzzle By Ronaldo Excellent</title>
+
+    <!-- Game Style -->
+    <page::style />
+        <style>
+            #notification {
+                background: linear-gradient(red, yellow);
+                width: 100%;
+                text-shadow: 2px 2px 2px black;
+                margin: 0 auto;
+                margin-bottom: 15px;
+                position: relative;
+                font-size: 1.7em;
+                font-weight: 700;
+                color: white;
+                animation: glow 1.6s linear infinite
+            }
+
+            @keyframes glow {
+                from {
+                    opacity: 0.7
+                }
+                50% {
+                    opacity: 1
+                }
+                to {
+                    opacity: 0.7
+                }
+            }
+
+            #showImage {
+                font-size: 1.2em;
+                font-weight: 700;
+                color: white;
+                text-shadow: 2px 2px 2px black;
+                padding: 3%;
+                cursor: pointer;
+            }
+
+            #full-image, #dark-transparent {
+                position: fixed;
+                display: flex;
+                justify-content: center;
+                align-items: center; 
+                background: white;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 0;
+                z-index: 100;
+                overflow: scroll;
+                transform: scale(0);
+                transition: 1s;
+            }
+
+            #dark-transparent {
+                z-index: 300;
+                opacity: 0;
+                background: black;
+                transform: scale(1);
+                overflow: hidden;
+                display: none;
+                transition: 2s;
+            }
+
+            #canvas {
+                background-color: grey;
+                border: 4px ridge #000000;
+                border-radius: 5%;
+                box-sizing: border-box;
+                display: grid;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+                position: relative;
+                box-shadow: 3px 3px 3px white;
+                user-select: none;
+                width: 100%;
+            }
+            
+            .row {
+                display: inline-flex;
+                background-color: #ffffff;
+                font-weight: bolder;
+                margin: 0px auto;
+            }
+
+            @keyframes slide {
+                from {
+                    transform: translateX(0);
+                }
+                50% {
+                    transform: translateX(20%);
+                }
+                75% {
+                    transform: translateX(-20%);
+                }
+                to {
+                    transform: translateX(0);
+                }
+            }
+
+            @keyframes blink {
+                from {
+                    background: white;
+                    color: #000000;
+                }
+                to {
+                    background: #00dd00;
+                    color: #ffffff;
+                }
+            }
+           
+            .place1 {
+                border: thin dashed #000000;
+                border-top: 0;
+                border-left-style: inset;
+                background-image: none;
+                width: 100px;
+                height: 100px;
+                margin: 0px auto;
+                cursor: pointer;
+            }
+
+            #second-row {
+                display: grid;
+                justify-items: center;
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: none;
+                height: 0;
+                transition: .5s;
+            }
+
+            #opnstore, #clsstore {
+                width: 30%;
+                font-weight: 800;
+                font-size: large;
+                cursor: pointer;
+            }
+
+            #opnstore:focus, #clsstore:focus {
+                background: #00d;
+                color: white;
+                border: 0;
+            }
+
+            #opnstore {
+                animation: 1.7s bounce linear infinite;
+                animation-fill-mode: both;
+            }
+
+            @keyframes bounce {
+                0%, 20%, 50%, 80% {
+                    transform: translateY(0);
+                }
+                40% {
+                    transform: translateY(-30px);
+                }
+                60% {
+                    transform: translateY(-15px);
+                }
+            }
+
+            [role='store'] {
+                background: rgba(244, 244, 247, 0.5);
+                width: 100%;
+                display: grid;
+                overflow-x: hidden;
+                overflow-y: scroll;
+                row-gap: 10px;
+                height: 100%;
+                transition: 1s;
+            }
+
+            [role='store']::-webkit-scrollbar {
+                display: block;
+                background: white;
+                height: 7px
+            }
+
+            [role='store']::-webkit-scrollbar-thumb {
+                background: red;
+            }
+
+            .place2 {
+                background: white;
+                border: 1px solid white;
+                width: 100px;
+                height: 100px;
+                padding: 3%;
+                cursor: pointer;
+                animation: .4s tile-loader;
+                white-space: nowrap;
+            }
+
+            @keyframes tile-loader {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+        <!-- End Style -->
+
+    <page::main />
+    <page::top-row />
+        <p id="notification" align="center">Select & Paste!</p>
+        <aside id="dark-transparent"></aside>
+
+        <aside id="full-image">
+            <button style="position: absolute; color:#fd0000; font-weight: bolder; text-shadow: 1px 1px 2px black; font-size: x-large; cursor: pointer; padding: 1%; top: 0; left: 0;" onclick="document.getElementById('full-image').style.transform = 'scale(0)'"> &times; Close </button>
+            <img src="tiles/main.png" />
+        </aside>
+
+    <page::content />
+        <center>
+            <section id="canvas">
+                <button id="showImage" onclick="document.getElementById('full-image').style.transform = 'scale(1)'">See Full Image</button><br>
+
+                <section class="row row1">
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+                </section>
+
+                <section class="row row2">
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+                </section>
+
+                <section class="row row1">
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+                </section>
+
+                <section class="row row2">
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+
+                    <div class="tile-block place1"></div>
+                </section>
+            </section>
+
+            <br>
+            <button id="opnstore" class="t" onclick="$RevealStore()"> ^ </button> 
+        </center>
+    
+    <page::outer-content />
+        <section id="second-row" class="t" ondbclick="$HideStore()">
+
+            <section id="inner" role="store">
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+
+                <div class="tile-block TB place2"></div>
+            
+            </section>
+        </section>
+
+        <!-- End Main -->
+
+
+    <page::engine />
+        <script>
+            try {
+                start();
+                
+                function start() {
+                    $cnv = document.getElementById('Game');
+                    $t = document.getElementsByClassName('tiles');
+                    $tb = document.getElementsByClassName('tile-block');
+                    $d = document.getElementById('notification');
+                    $dt = document.getElementById('dark-transparent');
+                    $tF = [];
+                    $rw1 = document.getElementsByClassName('row1');
+                    $rw2 = document.getElementsByClassName('row2');
+                    $tile_bank = ["url('tiles/001.png')", "url('tiles/002.png')", "url('tiles/003.png')", "url('tiles/004.png')", "url('tiles/005.png')", "url('tiles/006.png')", "url('tiles/007.png')", "url('tiles/008.png')", "url('tiles/009.png')", "url('tiles/010.png')", "url('tiles/011.png')", "url('tiles/012.png')", "url('tiles/013.png')", "url('tiles/014.png')", "url('tiles/015.png')", "url('tiles/016.png')"];
+                    _T = document.getElementsByClassName('tf');
+                    _TB = document.getElementsByClassName('TB');
+                    $transferData = document.getElementsByClassName('place2');
+                    $post_container = '';
+                    $receiveData = document.getElementsByClassName('place1');
+                    $two_row = document.getElementById('second-row');
+                    t_btns = document.getElementsByClassName('t');
+
+                    
+                    function $RevealStore() {
+                        $two_row.style.height = '100%';
+                    }
+
+                    function $HideStore() {
+                        $two_row.style.height = '0';
+                    }
+
+                    // assign store buttons
+                    t_btns[0].onclick = () => {$RevealStore()};
+                    t_btns[1].ondblclick = () => {$HideStore()};
+
+                    // alert('Javascript Support Confirmed');
+                    $cnv.draggable = false;
+                    
+                    // autorun shuffle
+                    $start__shuffle = setInterval(() => {_shuffle();}, 500);
+
+                    // shuffle
+                    function _shuffle() {
+                        $sh1 = Math.floor(Math.random() * _TB.length);
+                        $tiba = $tile_bank.sort();
+                        $sh2 = Math.floor(Math.random() * $tiba.length);
+                        _TB[$sh1].style.backgroundImage = $tile_bank[$sh2];
+                        _TB[$sh1].className = "tile-block place2";
+                        $tile_bank.splice($tile_bank.indexOf($tile_bank[$sh2]), 1);
+
+                        ($tile_bank.length < 0) ? clearInterval($start__shuffle) : null
+                    } 
+
+                    // add features to all tile store & targets
+                    for ($all = 0; $all < $transferData.length; $all++) {
+                        $transferData[$all].style.backgroundSize = "100% 100%";
+                        $transferData[$all].style.backgroundRepeat = "no-repeat";
+                        $transferData[$all].onclick = () => {$post_Data(event)};
+
+                        $receiveData[$all].style.backgroundImage = "none";
+                        $receiveData[$all].style.backgroundSize = "100% 100%";
+                        $receiveData[$all].style.backgroundRepeat = "no-repeat";
+                        $receiveData[$all].onclick = () => {$retrieve_Data(event)}
+                    }
+
+                     // configure data transfer
+                     function $post_Data(event) {
+                        $d.style.background = "purple";
+                        $d.innerHTML = "Paste!";
+                        $post_container = event.target.style.backgroundImage;
+                        $HideStore()
+                    }
+
+                    // configure data retrieval
+                    function $retrieve_Data(event) {
+                        $d.style.background = "goldenrod";
+                        $d.innerHTML = "Select!";
+                        //(event.target.style.backgroundImage !== "none") ? event.target.style.backgroundImage = "none" : 
+                        event.target.style.backgroundImage = $post_container; $post_container = ""; finish()
+                    }
+
+                    // dragenter
+                   /* function $swap_Data(event) {
+                        event.target.style.border = "thick ridge";
+                    } */
+
+                    // drop
+                    function finish() {
+                        $arr_t = ["001.png", "002.png", "003.png", "004.png", "005.png", "006.png", "007.png", "008.png", "009.png", "010.png", "011.png", "012.png", "013.png", "014.png", "015.png", "016.png"];
+
+                        function win() {for (i = 0; i < $rw1.length; i++) {
+                                $rw1[i].style.animation = 'slide 2s';
+                                $rw2[i].style.animation = 'slide 2s reverse';
+                            }
+                            $d.style.animation = "blink .2s infinite";
+                            setTimeout(function () {$dt.style.display = 'block';}, 2000);
+                            setTimeout(function () {$d.style.transition = '1.5s'; $d.style.zIndex = '400'; $d.style.position = 'fixed'; $d.innerHTML = "<i>You Win!</i>"; $d.style.marginTop = '200px'; $dt.style.opacity = '0.7'}, 3000)
+                        }
+                        
+                        (getComputedStyle($tb[0]).backgroundImage.substr(-9, 7) == $arr_t[0] && getComputedStyle($tb[1]).backgroundImage.substr(-9, 7) == $arr_t[1] && getComputedStyle($tb[2]).backgroundImage.substr(-9, 7) == $arr_t[2] && getComputedStyle($tb[3]).backgroundImage.substr(-9, 7) == $arr_t[3] && getComputedStyle($tb[4]).backgroundImage.substr(-9, 7) == $arr_t[4] && getComputedStyle($tb[5]).backgroundImage.substr(-9, 7) == $arr_t[5] && getComputedStyle($tb[6]).backgroundImage.substr(-9, 7) == $arr_t[6] && getComputedStyle($tb[7]).backgroundImage.substr(-9, 7) == $arr_t[7] && getComputedStyle($tb[8]).backgroundImage.substr(-9, 7) == $arr_t[8] && getComputedStyle($tb[9]).backgroundImage.substr(-9, 7) == $arr_t[9] && getComputedStyle($tb[10]).backgroundImage.substr(-9, 7) == $arr_t[10] && getComputedStyle($tb[11]).backgroundImage.substr(-9, 7) == $arr_t[11] && getComputedStyle($tb[12]).backgroundImage.substr(-9, 7) == $arr_t[12] && getComputedStyle($tb[13]).backgroundImage.substr(-9, 7) == $arr_t[13] && getComputedStyle($tb[14]).backgroundImage.substr(-9, 7) == $arr_t[14] && getComputedStyle($tb[15]).backgroundImage.substr(-9, 7) == $arr_t[15]) ? win() : null
+                    }
+                }
+            }
+
+            catch (error) {
+                console.log(error)
+            }
+        </script>
+        <!-- End Engine Code -->
+
+</section::game>
+<!-- Finish Game Building -->
